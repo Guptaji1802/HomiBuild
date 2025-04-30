@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomiBuild - AI House Designer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f2f5f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1c5980;
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .model-image {
+            width: 100%;
+            max-width: 700px;
+            margin-top: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #2980b9;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HomiBuild - Generate Your House Design</h1>
+        <form id="houseForm">
+            <label for="plotSize">Plot Size (e.g., 30x40):</label>
+            <input type="text" id="plotSize" name="plotSize" required>
+
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+
+            <label for="bhk">Number of BHK:</label>
+            <input type="number" id="bhk" name="bhk" required>
+
+            <button type="submit">Generate Design</button>
+        </form>
+
+        <div class="loader" id="loader"></div>
+
+        <div class="result" id="resultContainer" style="display:none;">
+            <h2>3D House Model:</h2>
+            <img id="modelImage" class="model-image" src="" alt="3D Model">
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("houseForm");
+        const resultContainer = document.getElementById("resultContainer");
+        const modelImage = document.getElementById("modelImage");
+        const loader = document.getElementById("loader");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const plotSize = document.getElementById("plotSize").value;
+            const location = document.getElementById("location").value;
+            const bhk = parseInt(document.getElementById("bhk").value);
+
+            loader.style.display = "block";
+            resultContainer.style.display = "none";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/design", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ plotSize, location, bhk })
+                });
+
+                const data = await response.json();
+                loader.style.display = "none";
+
+                modelImage.src = data.model_link_3d;
+                resultContainer.style.display = "block";
+            } catch (error) {
+                loader.style.display = "none";
+                alert("Error generating design. Make sure backend is running.");
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
